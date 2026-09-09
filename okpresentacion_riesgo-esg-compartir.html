@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riesgo regulatorio ESG y capacidad de pago</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --paper:#f7f7f5;
+  --card:#ffffff;
+  --ink:#171a19;
+  --muted:#5e6663;
+  --line:#dcddd8;
+  --line-soft:#eceee9;
+  --accent:#12574f;
+  --accent-soft:#e4efec;
+  --verde:#1f7a4c;
+  --verde-bg:#e8f2ea;
+  --ambar:#a8770f;
+  --ambar-bg:#f8efd9;
+  --rojo:#a8262c;
+  --rojo-bg:#f7e6e6;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 96px}
+
+/* ---------- encabezado ---------- */
+header.top{border-bottom:1px solid var(--line);margin-bottom:32px}
+header.top .inner{max-width:1180px;margin:0 auto;padding:34px 24px 26px}
+h1{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.15;margin:0 0 8px;letter-spacing:-.01em}
+header.top p{margin:0;color:var(--muted);max-width:66ch}
+.marco{margin-top:16px;display:flex;flex-wrap:wrap;gap:6px}
+.marco span{border:1px solid var(--line);border-radius:2px;padding:3px 9px;font-size:12.5px;color:var(--muted);background:var(--card)}
+
+/* ---------- rejilla ---------- */
+.grid{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:36px;align-items:start}
+@media (max-width:940px){.grid{grid-template-columns:1fr}}
+
+/* ---------- bloques ---------- */
+.block{background:var(--card);border:1px solid var(--line);border-radius:3px;margin-bottom:18px}
+.block > h2{
+  font-family:var(--serif);font-weight:400;font-size:19px;margin:0;
+  padding:15px 18px 13px;border-bottom:1px solid var(--line-soft);
+  display:flex;align-items:baseline;gap:10px
+}
+.block > h2 .n{
+  font-family:var(--sans);font-size:11.5px;color:var(--accent);border:1px solid var(--accent);
+  border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 20px;transform:translateY(-1px)
+}
+.body{padding:18px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 14px}
+
+/* ---------- formularios ---------- */
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+input[type=text],input[type=number],input[type=password],textarea,select{
+  width:100%;font:inherit;font-size:14px;color:var(--ink);background:var(--paper);
+  border:1px solid var(--line);border-radius:2px;padding:9px 10px
+}
+input[type=number]{font-variant-numeric:tabular-nums}
+textarea{min-height:110px;resize:vertical;line-height:1.45}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.field{margin-bottom:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:520px){.row2,.row3{grid-template-columns:1fr}}
+
+button{font:inherit;cursor:pointer;border-radius:2px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px}
+button:hover{border-color:var(--muted)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.primary{background:var(--accent);border-color:var(--accent);color:#fff;padding:12px 20px;font-size:15px;width:100%}
+.primary:hover{background:#0e463f;border-color:#0e463f}
+.primary:disabled{opacity:.5;cursor:not-allowed}
+.mini{font-size:13px;padding:6px 10px}
+.linkish{border:0;background:none;color:var(--accent);padding:0;text-decoration:underline;font-size:13px}
+
+/* ---------- carga de documentos ---------- */
+.doc{border:1px solid var(--line);border-radius:2px;padding:12px;margin-bottom:12px;background:var(--paper)}
+.doc .head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.doc .name{font-size:14px;font-weight:600}
+.doc .req{font-size:12px;color:var(--muted)}
+.doc .ctrls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.doc .status{font-size:12.5px;margin-top:8px;color:var(--muted);font-variant-numeric:tabular-nums}
+.doc .status.ok{color:var(--verde)}
+.doc .status.err{color:var(--rojo)}
+.doc textarea{margin-top:10px;background:var(--card)}
+input[type=file]{display:none}
+.fake-file{display:inline-block}
+
+/* ---------- tablas ---------- */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:12.5px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.total td{border-top:1px solid var(--line);border-bottom:0;font-weight:600}
+tbody tr:last-child td{border-bottom:0}
+
+/* ---------- semáforos ---------- */
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:2px;white-space:nowrap}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.bajo{color:var(--verde);background:var(--verde-bg)}
+.medio{color:var(--ambar);background:var(--ambar-bg)}
+.alto{color:var(--rojo);background:var(--rojo-bg)}
+
+/* ---------- panel de resultados ---------- */
+.medidor{position:relative;display:flex;height:38px;border:1px solid var(--line);border-radius:2px;margin:20px 0 8px}
+.medidor span{display:flex;align-items:center;justify-content:center;font-size:11.5px;color:var(--muted);border-right:1px solid var(--line-soft);text-align:center;padding:0 4px}
+.medidor span:last-child{border-right:0}
+.medidor span.on{color:var(--ink);font-weight:600;background:var(--accent-soft)}
+.marcador{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--ink)}
+.marcador em{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-style:normal;font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;background:var(--card);padding:0 4px}
+.formula{font-variant-numeric:tabular-nums;background:var(--paper);border:1px solid var(--line-soft);border-radius:2px;padding:12px 14px;font-size:13.5px;line-height:1.85}
+.reco{border-left:3px solid var(--accent);padding-left:15px}
+.reco.bajo{border-left-color:var(--verde)}
+.reco.medio{border-left-color:var(--ambar)}
+.reco.alto{border-left-color:var(--rojo)}
+.reco h3{font-family:var(--serif);font-weight:400;font-size:19px;margin:0 0 4px}
+.reco > p{margin:0;color:var(--muted);font-size:13.5px}
+.reco ul{margin:12px 0 0;padding-left:18px}
+.reco li{margin-bottom:7px}
+
+.vacio{border:1px dashed var(--line);border-radius:3px;padding:56px 28px;text-align:center;color:var(--muted);background:var(--card)}
+.vacio strong{display:block;font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ink);margin-bottom:8px}
+
+.dictamen{border:1px solid var(--ink);border-radius:3px;background:var(--card);margin-bottom:18px;overflow:hidden}
+.dictamen .cabeza{padding:22px 24px 20px;border-bottom:1px solid var(--line)}
+.dictamen .empresa{font-size:13px;color:var(--muted);margin:0 0 6px}
+.dictamen .veredicto{font-family:var(--serif);font-size:30px;line-height:1.15;margin:0}
+.dictamen .veredicto.bajo{color:var(--verde)}
+.dictamen .veredicto.medio{color:var(--ambar)}
+.dictamen .veredicto.alto{color:var(--rojo)}
+.escala{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
+.escala div{padding:9px 12px;font-size:12.5px;text-align:center;color:var(--muted);border-right:1px solid var(--line-soft)}
+.escala div:last-child{border-right:0}
+.escala div.on{font-weight:700;color:var(--ink);background:var(--accent-soft)}
+.dictamen .cuerpo{padding:18px 24px 22px}
+.dictamen .cuerpo p{margin:0 0 10px}
+.dictamen .cuerpo p:last-child{margin-bottom:0}
+.cifras{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-soft);border-top:1px solid var(--line)}
+@media (max-width:560px){.cifras{grid-template-columns:1fr}}
+.cifras div{background:var(--card);padding:14px 18px}
+.cifras .k{font-size:12.5px;color:var(--muted);margin-bottom:3px}
+.cifras .v{font-family:var(--serif);font-size:21px;font-variant-numeric:tabular-nums}
+
+.just{font-size:13px;color:var(--muted);margin-top:5px}
+.ev{font-size:12.5px;color:var(--muted);margin:6px 0 0;padding-left:16px}
+.ev li{margin-bottom:2px}
+.fuente{font-size:12px;color:var(--muted);font-style:italic}
+
+.acciones{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.aviso{background:var(--ambar-bg);border:1px solid #e6d3a4;color:#6b4e08;font-size:13px;padding:11px 13px;border-radius:2px;margin-bottom:14px}
+.aviso.rojo{background:var(--rojo-bg);border-color:#e3b9bb;color:#7d1d22}
+.progreso{font-size:13.5px;color:var(--muted);margin-top:12px;min-height:20px}
+.nota{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line-soft);margin-top:14px;padding-top:12px}
+details.metodo{margin-top:14px}
+details.metodo summary{cursor:pointer;font-size:13px;color:var(--accent)}
+details.metodo div{font-size:13px;color:var(--muted);margin-top:8px}
+.sel-riesgo{font-size:13px;padding:4px 6px;width:auto;min-width:92px}
+@media print{
+  header.top,.col-izq,.acciones,.no-print{display:none!important}
+  .grid{grid-template-columns:1fr}
+  body{background:#fff;font-size:12px}
+  .block,.dictamen{break-inside:avoid;border-color:#bbb}
+  .pill{display:inline-flex!important}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="inner">
+    <h1>Riesgo regulatorio ESG y capacidad de pago</h1>
+    <p>Evalúa la exposición de una emisora mexicana a cinco riesgos regulatorios ambientales y laborales, traduce esa exposición a una pérdida económica estimada, la aplica sobre los estados financieros y concluye sobre el riesgo de otorgarle crédito.</p>
+    <div class="marco">
+      <span>LGEEPA · MIA</span><span>Ley de Aguas Nacionales</span><span>Licencias y permisos</span><span>LFT · RFSST</span><span>LGCC · emisiones</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="grid">
+
+  <!-- ============== COLUMNA IZQUIERDA: CAPTURA ============== -->
+  <div class="col-izq">
+
+    <div class="block">
+      <h2><span class="n">1</span> Empresa y documentos</h2>
+      <div class="body">
+        <div class="field">
+          <label for="empresa">Nombre de la empresa</label>
+          <input type="text" id="empresa" placeholder="Ej. Cemex, S.A.B. de C.V." autocomplete="off">
+        </div>
+        <p class="hint">Carga el PDF o pega el texto. Entre más completo el documento, mejor la clasificación.</p>
+        <div id="docs"></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2><span class="n">2</span> Estados financieros</h2>
+      <div class="body">
+        <p class="hint">Captura las cifras del ejercicio en la misma unidad (pesos, o miles/millones de pesos: sé consistente). Deja en blanco lo que no tengas.</p>
+        <div class="field">
+          <label for="unidad">Unidad de las cifras</label>
+          <select id="unidad">
+            <option value="1">Pesos</option>
+            <option value="1000">Miles de pesos</option>
+            <option value="1000000" selected>Millones de pesos</option>
+          </select>
+        </div>
+        <div id="eeff-form"></div>
+        <div class="acciones">
+          <button class="mini" id="btn-extraer">Extraer del documento con IA</button>
+          <button class="mini" id="btn-ejemplo">Cargar ejemplo</button>
+          <button class="mini" id="btn-limpiar">Limpiar</button>
+        </div>
+        <div class="progreso" id="extraer-status"></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2><span class="n">3</span> Parámetros del modelo</h2>
+      <div class="body">
+        <div class="row2">
+          <div class="field">
+            <label for="sm">Salario mínimo general diario</label>
+            <input type="number" id="sm" value="278.80" step="0.01">
+          </div>
+          <div class="field">
+            <label for="uma">UMA diaria</label>
+            <input type="number" id="uma" value="113.14" step="0.01">
+          </div>
+        </div>
+        <div class="field">
+          <label for="escenario">Severidad del escenario</label>
+          <select id="escenario">
+            <option value="conservador">Conservador — límite inferior del rango</option>
+            <option value="central" selected>Central — punto medio del rango</option>
+            <option value="severo">Severo — límite superior del rango</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="tope-emisiones">Tope aplicable a emisiones</label>
+          <select id="tope-emisiones">
+            <option value="lgcc" selected>LGCC — hasta 10,000 días de salario mínimo</option>
+            <option value="lgeepa">LGEEPA — hasta 50,000 días de salario mínimo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Licencias y permisos: impacto como % de ingresos (bajo / medio / alto)</label>
+          <div class="row3">
+            <input type="number" id="lic-bajo" value="0.5" step="0.1">
+            <input type="number" id="lic-medio" value="2" step="0.1">
+            <input type="number" id="lic-alto" value="5" step="0.1">
+          </div>
+        </div>
+        <div class="field">
+          <label for="peso-reg">Peso de la exposición regulatoria en el puntaje final</label>
+          <select id="peso-reg">
+            <option value="0" selected>0% — solo financiero, lo regulatorio únicamente empeora por reglas de alerta</option>
+            <option value="25">25% — reconoce el doble conteo del impacto ya reflejado en las cifras</option>
+            <option value="45">45% — ponderación base</option>
+            <option value="60">60% — prioriza la calidad de la divulgación</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="tasa">Tasa de impuestos efectiva (%)</label>
+          <input type="number" id="tasa" value="30" step="1">
+        </div>
+        <details class="metodo" style="display:none">
+          <summary>Clave de API</summary>
+          <div><input type="password" id="apikey" autocomplete="off"></div>
+        </details>
+      </div>
+    </div>
+
+    <button class="primary" id="btn-analizar">Analizar riesgo</button>
+    <div class="progreso" id="status"></div>
+  </div>
+
+  <!-- ============== COLUMNA DERECHA: RESULTADOS ============== -->
+  <div class="col-der" id="resultados">
+    <div class="vacio">
+      <strong>Aún no hay dictamen</strong>
+      Captura la empresa, sus documentos y sus estados financieros. El análisis clasifica los cinco riesgos, cuantifica la pérdida, reexpresa los estados financieros y concluye sobre el riesgo de prestar.
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+/* =======================================================================
+   1. CONFIGURACIÓN DE RIESGOS
+   ======================================================================= */
+const RIESGOS = [
+  {
+    id:'mia',
+    nombre:'MIA / LGEEPA',
+    marco:'Ley General del Equilibrio Ecológico y la Protección al Ambiente',
+    tope:'Hasta 50,000 días de salario mínimo',
+    maxMulta:(p)=>50000*p.sm,
+    keywords:['manifestación de impacto ambiental','impacto ambiental','mia','lgeepa','semarnat','profepa','resolutivo','autorización ambiental','condicionantes','área natural','biodiversidad','remediación','suelo','residuos peligrosos'],
+    criterio:'Existencia y calidad de la información sobre autorizaciones de impacto ambiental, condicionantes, inspecciones de PROFEPA, sanciones ambientales y programas de remediación.'
+  },
+  {
+    id:'agua',
+    nombre:'Agua',
+    marco:'Ley de Aguas Nacionales',
+    tope:'Hasta 30,000 UMA',
+    maxMulta:(p)=>30000*p.uma,
+    keywords:['agua','conagua','título de concesión','concesión de agua','descarga','aguas residuales','volumen concesionado','extracción','consumo de agua','tratamiento de agua','nom-001','reúso','hídrico','cuenca','estrés hídrico'],
+    criterio:'Existencia de títulos de concesión, volúmenes concesionados y consumidos, permisos de descarga, calidad de descargas y cumplimiento de NOM-001-SEMARNAT.'
+  },
+  {
+    id:'licencias',
+    nombre:'Licencias y permisos',
+    marco:'Trazabilidad y vigencia de autorizaciones operativas',
+    tope:'% de ingresos por impacto operativo de una revocación o clausura',
+    maxMulta:null,
+    keywords:['licencia','licencia ambiental única','lau','permiso','autorización','vigencia','renovación','clausura','suspensión','revocación','cédula de operación','coa','concesión','registro','cumplimiento normativo','regulatorio','sanción'],
+    criterio:'Trazabilidad, vigencia y cobertura de licencias y permisos por planta o instalación; antecedentes de clausuras, suspensiones o procedimientos administrativos.'
+  },
+  {
+    id:'laboral',
+    nombre:'Seguridad laboral',
+    marco:'Ley Federal del Trabajo y Reglamento Federal de Seguridad y Salud en el Trabajo',
+    tope:'Hasta 5,000 UMA',
+    maxMulta:(p)=>5000*p.uma,
+    keywords:['seguridad','salud en el trabajo','accidente','accidentes','incidente','trir','ltifr','fatalidad','fatalidades','lesión','riesgo de trabajo','stps','comisión de seguridad e higiene','capacitación','iso 45001','tasa de incidencia','horas trabajadas','contratistas'],
+    criterio:'Existencia de métricas cuantitativas de siniestralidad (TRIR, LTIFR, fatalidades, días perdidos), comisiones de seguridad e higiene, certificaciones y sanciones de la STPS.'
+  },
+  {
+    id:'emisiones',
+    nombre:'Emisiones y energía',
+    marco:'Ley General de Cambio Climático y LGEEPA',
+    tope:'LGCC: 500 a 10,000 días de salario mínimo',
+    maxMulta:(p)=> (p.topeEmisiones==='lgeepa'?50000:10000)*p.sm,
+    keywords:['emisiones','gei','gases de efecto invernadero','co2','alcance 1','alcance 2','alcance 3','scope 1','scope 2','huella de carbono','registro nacional de emisiones','rene','lgcc','energía','consumo energético','renovable','intensidad','descarbonización','net zero','cédula de operación anual'],
+    criterio:'Reporte de emisiones por alcance, verificación externa, inscripción en el Registro Nacional de Emisiones, consumo energético y metas de descarbonización.'
+  }
+];
+
+const DOCS = [
+  {id:'anual', nombre:'Informe anual', req:'Requerido'},
+  {id:'sust',  nombre:'Informe de sustentabilidad', req:'Requerido'},
+  {id:'eeff',  nombre:'Estados financieros y notas', req:'Opcional para el análisis de riesgos'}
+];
+
+const CAMPOS = [
+  {g:'Estado de resultados', items:[
+    {id:'ingresos', l:'Ingresos'},
+    {id:'costoVentas', l:'Costo de ventas'},
+    {id:'gastosOp', l:'Gastos de operación'},
+    {id:'depreciacion', l:'Depreciación y amortización'},
+    {id:'gastosFin', l:'Gastos financieros (intereses)'},
+    {id:'otrosRes', l:'Otros ingresos (gastos), neto'}
+  ]},
+  {g:'Balance general', items:[
+    {id:'activoCirc', l:'Activo circulante'},
+    {id:'efectivo', l:'Efectivo y equivalentes'},
+    {id:'inventarios', l:'Inventarios'},
+    {id:'activoTotal', l:'Activo total'},
+    {id:'pasivoCirc', l:'Pasivo circulante'},
+    {id:'pasivoTotal', l:'Pasivo total'},
+    {id:'deudaTotal', l:'Deuda financiera total'},
+    {id:'capital', l:'Capital contable'}
+  ]},
+  {g:'Flujo de efectivo', items:[
+    {id:'feo', l:'Flujo de efectivo de operación'}
+  ]}
+];
+
+const FACTORES = {
+  conservador:{bajo:0.05, medio:0.25, alto:0.70},
+  central:    {bajo:0.075, medio:0.325, alto:0.85},
+  severo:     {bajo:0.10, medio:0.40, alto:1.00}
+};
+
+const state = {
+  docs:{anual:'', sust:'', eeff:''},
+  riesgos:null,
+  resultado:null,
+  analizando:false
+};
+
+/* =======================================================================
+   2. UTILIDADES
+   ======================================================================= */
+// Clave de API integrada — no compartir este archivo fuera del equipo
+const API_KEY = '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';
+
+const $ = s=>document.querySelector(s);
+
+// El worker se registra al cargar la página. Si el CDN no lo entrega, pdf.js
+// procesa el documento en el hilo principal: más lento, pero el texto sale igual.
+if(window.pdfjsLib){
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+const fmtMXN = n => (n===null||n===undefined||isNaN(n)) ? '—' :
+  new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:0}).format(n);
+const fmtNum = (n,d=2) => (n===null||n===undefined||!isFinite(n)) ? '—' :
+  new Intl.NumberFormat('es-MX',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
+const fmtPct = (n,d=1) => (n===null||n===undefined||!isFinite(n)) ? '—' : fmtNum(n,d)+'%';
+const num = id => { const v = parseFloat($('#'+id).value); return isNaN(v)?null:v; };
+const esc = s => String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+
+function setStatus(el, msg, tipo){
+  const n = $(el); n.textContent = msg;
+  n.style.color = tipo==='err' ? 'var(--rojo)' : tipo==='ok' ? 'var(--verde)' : 'var(--muted)';
+}
+
+/* =======================================================================
+   3. CONSTRUCCIÓN DE LA INTERFAZ DE CAPTURA
+   ======================================================================= */
+$('#docs').innerHTML = DOCS.map(d=>`
+  <div class="doc" data-doc="${d.id}">
+    <div class="head">
+      <span class="name">${d.nombre}</span>
+      <span class="req">${d.req}</span>
+    </div>
+    <div class="ctrls">
+      <label class="fake-file">
+        <input type="file" accept=".pdf,.txt,.md,.csv,.xlsx,.xls" data-file="${d.id}">
+        <span class="mini" role="button" tabindex="0" style="display:inline-block;border:1px solid var(--line);border-radius:2px;padding:6px 10px;background:var(--card)">Elegir archivo</span>
+      </label>
+      <button class="mini" data-toggle="${d.id}">Pegar texto</button>
+    </div>
+    <div class="status" data-status="${d.id}">Sin contenido</div>
+    <textarea data-text="${d.id}" hidden placeholder="Pega aquí el contenido del documento"></textarea>
+  </div>`).join('');
+
+$('#eeff-form').innerHTML = CAMPOS.map(g=>`
+  <div style="margin-bottom:6px">
+    <div style="font-size:12.5px;color:var(--muted);border-bottom:1px solid var(--line-soft);padding-bottom:4px;margin-bottom:10px">${g.g}</div>
+    <div class="row2">
+      ${g.items.map(i=>`<div class="field"><label for="${i.id}">${i.l}</label><input type="number" id="${i.id}" step="any" placeholder="0"></div>`).join('')}
+    </div>
+  </div>`).join('');
+
+document.addEventListener('change', async e=>{
+  const fid = e.target.getAttribute && e.target.getAttribute('data-file');
+  if(!fid) return;
+  const file = e.target.files[0]; if(!file) return;
+  const st = document.querySelector(`[data-status="${fid}"]`);
+  st.className='status'; st.textContent = 'Leyendo '+file.name+'…';
+  try{
+    const texto = await leerArchivo(file, (p,t)=>{
+      st.textContent = `Leyendo ${file.name} · página ${p} de ${t}`;
+    });
+    state.docs[fid] = texto;
+    const ta = document.querySelector(`[data-text="${fid}"]`);
+    ta.value = texto;
+    if(texto.replace(/\s/g,'').length < 1000){
+      st.className='status err';
+      st.textContent = `${file.name} · casi sin texto extraíble. Probablemente es un PDF escaneado: pega el texto a mano.`;
+    }else{
+      st.className='status ok';
+      st.textContent = `${file.name} · ${texto.length.toLocaleString('es-MX')} caracteres`;
+    }
+  }catch(err){
+    st.className='status err';
+    st.textContent = 'No se pudo leer el archivo. Prueba pegando el texto.';
+  }
+});
+
+document.addEventListener('click', e=>{
+  const tid = e.target.getAttribute && e.target.getAttribute('data-toggle');
+  if(!tid) return;
+  const ta = document.querySelector(`[data-text="${tid}"]`);
+  ta.hidden = !ta.hidden;
+  if(!ta.hidden) ta.focus();
+});
+
+document.addEventListener('input', e=>{
+  const tid = e.target.getAttribute && e.target.getAttribute('data-text');
+  if(!tid) return;
+  state.docs[tid] = e.target.value;
+  const st = document.querySelector(`[data-status="${tid}"]`);
+  const len = e.target.value.length;
+  st.className = len ? 'status ok' : 'status';
+  st.textContent = len ? `Texto pegado · ${len.toLocaleString('es-MX')} caracteres` : 'Sin contenido';
+});
+
+async function leerArchivo(file, avance){
+  const nombre = file.name.toLowerCase();
+  if(nombre.endsWith('.pdf')){
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({
+      data: buf,
+      verbosity: 0,          // oculta avisos de fuentes incrustadas
+      disableFontFace: true, // no hace falta dibujar tipografías para leer el texto
+      isEvalSupported: false
+    }).promise;
+    let out=[];
+    for(let i=1;i<=pdf.numPages;i++){
+      const page = await pdf.getPage(i);
+      const tc = await page.getTextContent();
+      out.push(tc.items.map(it=>it.str).join(' '));
+      page.cleanup();
+      if(avance && (i%5===0 || i===pdf.numPages)){
+        avance(i, pdf.numPages);
+        await new Promise(r=>setTimeout(r,0)); // deja respirar a la interfaz
+      }
+    }
+    return out.join('\n\n');
+  }
+  if(nombre.endsWith('.xlsx')||nombre.endsWith('.xls')){
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf,{type:'array'});
+    return wb.SheetNames.map(n=>`--- ${n} ---\n`+XLSX.utils.sheet_to_csv(wb.Sheets[n])).join('\n\n');
+  }
+  return await file.text();
+}
+
+/* =======================================================================
+   4. LLAMADAS A LA IA
+   ======================================================================= */
+async function llamarClaude(system, prompt){
+  const key = API_KEY || $('#apikey').value.trim();
+  if(!key) throw new Error('Sin clave de API');
+
+  const payload = JSON.stringify({
+    model:'claude-sonnet-4-6', max_tokens:1000, system,
+    messages:[{role:'user',content:prompt}]
+  });
+
+  // Intento 1: llamada directa (funciona en localhost y en algunos navegadores)
+  try{
+    const r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: payload
+    });
+    if(r.ok){ const d=await r.json(); return (d.content||[]).map(c=>c.text||'').join('\n'); }
+    if(r.status===401) throw new Error('Clave de API inválida o sin crédito');
+  }catch(e){
+    if(e.message.includes('Clave')) throw e; // error real, no CORS
+    // Si falla por CORS, intentamos el proxy
+  }
+
+  // Intento 2: proxy CORS (necesario al abrir el archivo con doble clic)
+  const proxyUrl = 'https://api.allorigins.win/raw?url='+encodeURIComponent('https://api.anthropic.com/v1/messages');
+  const r2 = await fetch(proxyUrl,{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':key,
+      'anthropic-version':'2023-06-01'
+    },
+    body: payload
+  });
+  if(!r2.ok) throw new Error('Error al conectar con la API ('+r2.status+'). Verifica la clave y el crédito.');
+  const data = await r2.json();
+  return (data.content||[]).map(c=>c.text||'').join('\n');
+}
+
+function parseJSON(txt){
+  let t = txt.replace(/```json/gi,'').replace(/```/g,'').trim();
+  const a=t.indexOf('{'), b=t.lastIndexOf('}');
+  if(a>=0&&b>a) t=t.slice(a,b+1);
+  return JSON.parse(t);
+}
+
+// Selecciona los fragmentos del documento más relevantes para un riesgo
+function extraerRelevante(texto, keywords, maxChars){
+  if(!texto) return '';
+  if(texto.length<=maxChars) return texto;
+  const paras = texto.split(/\n+/).map(p=>p.trim()).filter(p=>p.length>40);
+  const scored = paras.map((p,i)=>{
+    const l=p.toLowerCase();
+    let s=0; keywords.forEach(k=>{ if(l.includes(k)) s+=2; });
+    if(/\d/.test(p)) s+=0.5;
+    return {p,i,s};
+  }).filter(x=>x.s>0);
+  scored.sort((a,b)=> b.s-a.s || a.i-b.i);
+  const sel=[]; let len=0;
+  for(const it of scored){
+    if(len+it.p.length>maxChars) continue;
+    sel.push(it); len+=it.p.length;
+    if(len>maxChars*0.95) break;
+  }
+  if(!sel.length) return texto.slice(0,maxChars);
+  sel.sort((a,b)=>a.i-b.i);
+  return sel.map(s=>s.p).join('\n\n');
+}
+
+const SYSTEM_RIESGO = `Eres analista de riesgo regulatorio ESG para una institución de crédito en México. Evalúas la CALIDAD Y EXISTENCIA de la información pública que la empresa divulga sobre un riesgo regulatorio, no el cumplimiento real, que no puedes verificar.
+
+Criterios de clasificación, estrictos:
+- "bajo": hay información concreta con datos cuantitativos verificables (cifras, volúmenes, números de título, indicadores) y/o declaración explícita de cero incumplimientos o sanciones.
+- "medio": el tema se menciona, pero de forma parcial, general o solo cualitativa, sin cifras que permitan verificar.
+- "alto": no hay información relevante sobre el riesgo, o es notoriamente deficiente.
+
+Ante la duda, o si los fragmentos no contienen información sobre el riesgo, clasifica "alto". No inventes datos ni supongas información que no aparezca en los fragmentos.
+
+Responde ÚNICAMENTE con un objeto JSON, sin texto adicional ni markdown:
+{"nivel":"bajo|medio|alto","justificacion":"2 o 3 oraciones en español explicando la clasificación","evidencias":["cita breve o dato encontrado, máximo 12 palabras","..."],"faltante":"qué información concreta debería pedirse a la empresa"}`;
+
+async function evaluarRiesgo(riesgo, empresa){
+  const texto = [state.docs.sust, state.docs.anual].filter(Boolean).join('\n\n');
+  const frag = extraerRelevante(texto, riesgo.keywords, 22000);
+  if(!frag.trim()){
+    return {nivel:'alto', justificacion:'No se cargó información suficiente para evaluar este riesgo. Por regla del modelo, la ausencia de información se clasifica como riesgo alto.', evidencias:[], faltante:riesgo.criterio, fuente:'regla'};
+  }
+  const prompt = `Empresa: ${empresa}
+Riesgo a evaluar: ${riesgo.nombre}
+Marco legal: ${riesgo.marco}
+Qué debe buscarse: ${riesgo.criterio}
+
+Fragmentos del informe anual y del informe de sustentabilidad (seleccionados por relevancia):
+"""
+${frag}
+"""
+
+Clasifica el nivel de riesgo de divulgación para "${riesgo.nombre}" según los criterios del sistema.`;
+  const out = await llamarClaude(SYSTEM_RIESGO, prompt);
+  const j = parseJSON(out);
+  const nivel = ['bajo','medio','alto'].includes((j.nivel||'').toLowerCase()) ? j.nivel.toLowerCase() : 'alto';
+  return {
+    nivel,
+    justificacion: j.justificacion || '',
+    evidencias: Array.isArray(j.evidencias)?j.evidencias.slice(0,4):[],
+    faltante: j.faltante || '',
+    fuente:'ia'
+  };
+}
+
+const SYSTEM_EEFF = `Extraes cifras de estados financieros de empresas mexicanas. Devuelves ÚNICAMENTE un objeto JSON sin markdown ni explicaciones. Usa números sin separadores de miles, con punto decimal, en la MISMA unidad en que vienen en el documento. Los gastos y costos van en positivo. Si un dato no aparece, usa null. Claves exactas:
+{"ingresos":n,"costoVentas":n,"gastosOp":n,"depreciacion":n,"gastosFin":n,"otrosRes":n,"activoCirc":n,"efectivo":n,"inventarios":n,"activoTotal":n,"pasivoCirc":n,"pasivoTotal":n,"deudaTotal":n,"capital":n,"feo":n,"unidad":"pesos|miles|millones"}`;
+
+/* =======================================================================
+   5. MODELO DE CÁLCULO
+   ======================================================================= */
+function leerParametros(){
+  return {
+    sm: num('sm') ?? 278.80,
+    uma: num('uma') ?? 113.14,
+    escenario: $('#escenario').value,
+    topeEmisiones: $('#tope-emisiones').value,
+    lic: {bajo:(num('lic-bajo')??0.5)/100, medio:(num('lic-medio')??2)/100, alto:(num('lic-alto')??5)/100},
+    pesoReg: (num('peso-reg') ?? 45)/100,
+    tasa: (num('tasa') ?? 30)/100,
+    unidad: parseFloat($('#unidad').value)
+  };
+}
+
+function leerEEFF(){
+  const o={};
+  CAMPOS.forEach(g=>g.items.forEach(i=> o[i.id]=num(i.id)));
+  return o;
+}
+
+// Paso 2: pérdida económica por riesgo
+function calcularPerdidas(riesgos, params, ingresosPesos){
+  const f = FACTORES[params.escenario];
+  return RIESGOS.map(r=>{
+    const nivel = riesgos[r.id].nivel;
+    let base, perdida, detalle;
+    if(r.id==='licencias'){
+      const pct = params.lic[nivel];
+      base = ingresosPesos;
+      perdida = ingresosPesos*pct;
+      detalle = `${fmtPct(pct*100,1)} de los ingresos`;
+    }else{
+      base = r.maxMulta(params);
+      perdida = base*f[nivel];
+      detalle = `${fmtPct(f[nivel]*100,1)} del tope de ${fmtMXN(base)}`;
+    }
+    return {id:r.id, nombre:r.nombre, nivel, base, perdida, detalle, tope:r.tope};
+  });
+}
+
+// Pasos 3 y 4: reexpresión de estados financieros y ratios
+function ajustarFinancieros(e, perdidaPesos, params){
+  const u = params.unidad;
+  const perdida = perdidaPesos/u;                  // en la unidad de captura
+  const impactoNeto = perdida*(1-params.tasa);
+
+  const base = (ing)=>{
+    const ub = (ing!==null && e.costoVentas!==null) ? ing-e.costoVentas : null;
+    const uo = (ub!==null && e.gastosOp!==null) ? ub-e.gastosOp : (ub!==null?ub:null);
+    const uai = (uo!==null) ? uo-(e.gastosFin||0)+(e.otrosRes||0) : null;
+    const un = (uai!==null) ? uai*(1-params.tasa) : null;
+    const ebitda = (uo!==null) ? uo+(e.depreciacion||0) : null;
+    return {ingresos:ing, costoVentas:e.costoVentas, utilidadBruta:ub, gastosOp:e.gastosOp,
+            utilidadOp:uo, gastosFin:e.gastosFin, otrosRes:e.otrosRes, uai, utilidadNeta:un, ebitda};
+  };
+
+  const antes = base(e.ingresos);
+  const despues = base(e.ingresos!==null ? e.ingresos-perdida : null);
+
+  // Balance: la pérdida neta de impuestos consume efectivo y, de faltar, se reconoce
+  // como provisión en el pasivo circulante. El capital contable absorbe el impacto neto.
+  const efDisp = e.efectivo ?? 0;
+  const usoCaja = Math.min(efDisp, impactoNeto);
+  const provision = Math.max(0, impactoNeto-usoCaja);
+
+  const bAntes = {activoCirc:e.activoCirc, efectivo:e.efectivo, inventarios:e.inventarios,
+    activoTotal:e.activoTotal, pasivoCirc:e.pasivoCirc, pasivoTotal:e.pasivoTotal,
+    deudaTotal:e.deudaTotal, capital:e.capital, feo:e.feo};
+  const bDesp = {
+    activoCirc: e.activoCirc!==null ? e.activoCirc-usoCaja : null,
+    efectivo: e.efectivo!==null ? e.efectivo-usoCaja : null,
+    inventarios: e.inventarios,
+    activoTotal: e.activoTotal!==null ? e.activoTotal-usoCaja : null,
+    pasivoCirc: e.pasivoCirc!==null ? e.pasivoCirc+provision : null,
+    pasivoTotal: e.pasivoTotal!==null ? e.pasivoTotal+provision : null,
+    deudaTotal: e.deudaTotal,
+    capital: e.capital!==null ? e.capital-impactoNeto : null,
+    feo: e.feo!==null ? e.feo-usoCaja : null
+  };
+  return {antes:{...antes,...bAntes}, despues:{...despues,...bDesp}, perdida, impactoNeto, usoCaja, provision};
+}
+
+const RATIOS = [
+  {id:'liquidez', nombre:'Razón de liquidez (circulante)', grupo:'Solidez', unidad:'x',
+   calc:f=> (f.activoCirc!==null&&f.pasivoCirc)? f.activoCirc/f.pasivoCirc : null,
+   bueno:v=>v>=1.5, medio:v=>v>=1.0, mejorAlto:true, ref:'≥ 1.5 sólido · 1.0–1.5 ajustado · < 1.0 débil'},
+  {id:'acida', nombre:'Prueba ácida', grupo:'Solidez', unidad:'x',
+   calc:f=> (f.activoCirc!==null&&f.pasivoCirc)? (f.activoCirc-(f.inventarios||0))/f.pasivoCirc : null,
+   bueno:v=>v>=1.0, medio:v=>v>=0.7, mejorAlto:true, ref:'≥ 1.0 sólido · 0.7–1.0 ajustado · < 0.7 débil'},
+  {id:'apalancamiento', nombre:'Apalancamiento (pasivo / capital)', grupo:'Solidez', unidad:'x',
+   calc:f=> (f.pasivoTotal!==null&&f.capital)? f.pasivoTotal/f.capital : null,
+   bueno:v=>v<=1.0&&v>0, medio:v=>v<=2.0&&v>0, mejorAlto:false, ref:'≤ 1.0 sólido · 1.0–2.0 elevado · > 2.0 crítico'},
+  {id:'endeudamiento', nombre:'Endeudamiento (pasivo / activo)', grupo:'Solidez', unidad:'x',
+   calc:f=> (f.pasivoTotal!==null&&f.activoTotal)? f.pasivoTotal/f.activoTotal : null,
+   bueno:v=>v<=0.5, medio:v=>v<=0.7, mejorAlto:false, ref:'≤ 0.50 sólido · 0.50–0.70 elevado · > 0.70 crítico'},
+  {id:'cobertura', nombre:'Cobertura de intereses', grupo:'Capacidad de pago', unidad:'x',
+   calc:f=> (f.utilidadOp!==null&&f.gastosFin)? f.utilidadOp/f.gastosFin : null,
+   bueno:v=>v>=3, medio:v=>v>=1.5, mejorAlto:true, ref:'≥ 3.0 cómoda · 1.5–3.0 ajustada · < 1.5 crítica'},
+  {id:'dnEbitda', nombre:'Deuda neta / EBITDA', grupo:'Capacidad de pago', unidad:'x',
+   calc:f=> (f.deudaTotal!==null&&f.ebitda)? (f.deudaTotal-(f.efectivo||0))/f.ebitda : null,
+   bueno:v=>v<=2.5, medio:v=>v<=4.0, mejorAlto:false, ref:'≤ 2.5 sano · 2.5–4.0 alto · > 4.0 crítico'},
+  {id:'feoDeuda', nombre:'Flujo operativo / deuda total', grupo:'Capacidad de pago', unidad:'x',
+   calc:f=> (f.feo!==null&&f.deudaTotal)? f.feo/f.deudaTotal : null,
+   bueno:v=>v>=0.25, medio:v=>v>=0.10, mejorAlto:true, ref:'≥ 0.25 sano · 0.10–0.25 ajustado · < 0.10 débil'}
+];
+
+function evaluarRatio(r, v){
+  if(v===null||!isFinite(v)) return null;
+  if(r.bueno(v)) return 'bajo';
+  if(r.medio(v)) return 'medio';
+  return 'alto';
+}
+
+const PUNTOS = {bajo:1, medio:2, alto:3};
+
+// Paso 5: dictamen de riesgo de crédito
+function etiquetar(t){
+  if(t<1.7) return {nivel:'bajo', etiqueta:'Bajo riesgo de crédito'};
+  if(t<2.35) return {nivel:'medio', etiqueta:'Riesgo moderado'};
+  return {nivel:'alto', etiqueta:'Alto riesgo de crédito'};
+}
+
+// Combina las dos calificaciones. Los pisos financieros aplican bajo cualquier
+// ponderación porque describen hechos de las cifras. El ajuste regulatorio es
+// aditivo y proporcional al número de riesgos opacos, para no aplastar la
+// diferencia entre una empresa débil y una muy débil.
+function componer(scoreReg, scoreFin, w){
+  const total = scoreFin!==null ? w*scoreReg+(1-w)*scoreFin : scoreReg;
+  return {total, ...etiquetar(total)};
+}
+
+function dictaminar(riesgos, ratiosEval, fin, pesoReg){
+  const regs = RIESGOS.map(r=>PUNTOS[riesgos[r.id].nivel]);
+  const scoreReg = regs.reduce((a,b)=>a+b,0)/regs.length;
+
+  const fins = ratiosEval.filter(x=>x.nivel).map(x=>PUNTOS[x.nivel]);
+  const scoreFin = fins.length ? fins.reduce((a,b)=>a+b,0)/fins.length : null;
+
+  // Señales de alerta: se reportan al analista, no modifican el puntaje.
+  // El puntaje sale íntegro de la ponderación definida en los parámetros.
+  const banderas = [];
+  const un = fin.despues.utilidadNeta, unA = fin.antes.utilidadNeta;
+  if(un!==null && un<0 && unA!==null && unA>=0)
+    banderas.push('La pérdida estimada convierte la utilidad neta del ejercicio en pérdida.');
+  const cob = ratiosEval.find(x=>x.id==='cobertura');
+  if(cob && cob.valor!==null && cob.valor<1)
+    banderas.push('La utilidad de operación ajustada no alcanza a cubrir el gasto financiero del año.');
+  const altos = RIESGOS.filter(r=>riesgos[r.id].nivel==='alto');
+  if(altos.length>=3)
+    banderas.push(`${altos.length} de los cinco riesgos quedaron en nivel alto por falta de divulgación verificable.`);
+
+  const r = componer(scoreReg, scoreFin, pesoReg);
+  const sensibilidad = [0, 0.25, 0.45, 0.60].map(w=>({w, ...componer(scoreReg, scoreFin, w)}));
+
+  return {nivel:r.nivel, etiqueta:r.etiqueta, scoreReg, scoreFin, total:r.total,
+          pesoReg, banderas, sensibilidad, altos:altos.length};
+}
+
+/* =======================================================================
+   6. FLUJO PRINCIPAL
+   ======================================================================= */
+$('#btn-analizar').addEventListener('click', async ()=>{
+  if(state.analizando) return;
+  const empresa = $('#empresa').value.trim();
+  if(!empresa){ setStatus('#status','Escribe el nombre de la empresa para continuar.','err'); $('#empresa').focus(); return; }
+  const e = leerEEFF();
+  if(e.ingresos===null){ setStatus('#status','Captura al menos los ingresos del ejercicio.','err'); $('#ingresos').focus(); return; }
+
+  state.analizando = true;
+  $('#btn-analizar').disabled = true;
+  const riesgos = {};
+  let fallos = 0;
+
+  for(let i=0;i<RIESGOS.length;i++){
+    const r = RIESGOS[i];
+    setStatus('#status', `Evaluando ${i+1} de 5 · ${r.nombre}…`);
+    try{
+      riesgos[r.id] = await evaluarRiesgo(r, empresa);
+    }catch(err){
+      fallos++;
+      riesgos[r.id] = {nivel:'alto', justificacion:'No fue posible completar el análisis automático de este riesgo. Se aplicó la regla del modelo: sin información evaluable, el riesgo se clasifica como alto. Puedes cambiar el nivel manualmente en la tabla.', evidencias:[], faltante:r.criterio, fuente:'error'};
+    }
+  }
+
+  state.riesgos = riesgos;
+  $('#btn-analizar').disabled = false;
+  state.analizando = false;
+  setStatus('#status', fallos===5 ? 'No se pudo conectar con el análisis automático. Clasifica los cinco riesgos manualmente en la tabla de resultados.' : 'Análisis completo.', fallos===5?'err':'ok');
+  recalcular();
+  $('#resultados').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+function recalcular(){
+  if(!state.riesgos) return;
+  const params = leerParametros();
+  const e = leerEEFF();
+  const empresa = $('#empresa').value.trim() || 'Empresa sin nombre';
+  const ingresosPesos = (e.ingresos||0)*params.unidad;
+
+  const perdidas = calcularPerdidas(state.riesgos, params, ingresosPesos);
+  const perdidaTotal = perdidas.reduce((a,b)=>a+b.perdida,0);
+  const fin = ajustarFinancieros(e, perdidaTotal, params);
+
+  const ratiosEval = RATIOS.map(r=>{
+    const va = r.calc(fin.antes), vd = r.calc(fin.despues);
+    return {id:r.id, nombre:r.nombre, grupo:r.grupo, ref:r.ref, antes:va, valor:vd, nivel:evaluarRatio(r,vd), nivelAntes:evaluarRatio(r,va)};
+  });
+
+  const dict = dictaminar(state.riesgos, ratiosEval, fin, params.pesoReg);
+  state.resultado = {empresa, params, e, perdidas, perdidaTotal, fin, ratiosEval, dict, ingresosPesos};
+  render();
+}
+
+/* =======================================================================
+   7. RENDER DE RESULTADOS
+   ======================================================================= */
+function render(){
+  const R = state.resultado; if(!R) return;
+  const {empresa, params, perdidas, perdidaTotal, fin, ratiosEval, dict} = R;
+  const u = params.unidad;
+  const um = u===1?'pesos':u===1000?'miles de pesos':'millones de pesos';
+  const fu = v => v===null||v===undefined||!isFinite(v) ? '—' : fmtNum(v,1);
+  const delta = (a,b)=>{
+    if(a===null||b===null||!isFinite(a)||!isFinite(b)) return '—';
+    const d=b-a;
+    const c = d<0?'var(--rojo)':d>0?'var(--verde)':'var(--muted)';
+    return `<span style="color:${c}">${d>0?'+':''}${fmtNum(d,1)}</span>`;
+  };
+
+  const filaRiesgo = p => {
+    const r = state.riesgos[p.id];
+    return `<tr>
+      <td>
+        <div style="font-weight:600">${esc(p.nombre)}</div>
+        <div class="just">${esc(r.justificacion)}</div>
+        ${r.evidencias&&r.evidencias.length?`<ul class="ev">${r.evidencias.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+        ${r.faltante?`<div class="just" style="margin-top:5px"><em>Información faltante:</em> ${esc(r.faltante)}</div>`:''}
+      </td>
+      <td>
+        <select class="sel-riesgo no-print" data-nivel="${p.id}">
+          ${['bajo','medio','alto'].map(n=>`<option value="${n}" ${r.nivel===n?'selected':''}>${cap(n)}</option>`).join('')}
+        </select>
+        <span class="pill ${r.nivel}" style="display:none">${cap(r.nivel)}</span>
+      </td>
+      <td class="num">${fmtMXN(p.perdida)}<div class="just">${p.detalle}</div></td>
+    </tr>`;
+  };
+
+  const filaER = (l,k,neg)=>`<tr${l==='Utilidad neta'?' class="total"':''}>
+      <td>${l}</td>
+      <td class="num">${fu(fin.antes[k])}</td>
+      <td class="num">${fu(fin.despues[k])}</td>
+      <td class="num">${delta(fin.antes[k],fin.despues[k])}</td></tr>`;
+
+  const filaBG = (l,k)=>`<tr>
+      <td>${l}</td>
+      <td class="num">${fu(fin.antes[k])}</td>
+      <td class="num">${fu(fin.despues[k])}</td>
+      <td class="num">${delta(fin.antes[k],fin.despues[k])}</td></tr>`;
+
+  const grupoRatios = g => `
+    <tr><td colspan="4" style="background:var(--paper);font-size:12.5px;color:var(--muted);border-bottom:1px solid var(--line)">${g}</td></tr>
+    ${ratiosEval.filter(r=>r.grupo===g).map(r=>`
+      <tr>
+        <td>${r.nombre}<div class="just">${r.ref}</div></td>
+        <td class="num">${r.antes===null?'—':fmtNum(r.antes,2)}</td>
+        <td class="num" style="font-weight:600">${r.valor===null?'—':fmtNum(r.valor,2)}</td>
+        <td>${r.nivel?`<span class="pill ${r.nivel}">${r.nivel==='bajo'?'Sano':r.nivel==='medio'?'Ajustado':'Crítico'}</span>`:'<span class="fuente">Sin datos</span>'}</td>
+      </tr>`).join('')}`;
+
+  const pctIngresos = R.ingresosPesos ? perdidaTotal/R.ingresosPesos*100 : null;
+  const dictTexto = redactarDictamen(R);
+
+  $('#resultados').innerHTML = `
+    <div class="dictamen">
+      <div class="cabeza">
+        <p class="empresa">${esc(empresa)} · dictamen de riesgo regulatorio y capacidad de pago</p>
+        <p class="veredicto ${dict.nivel}">${dict.etiqueta}</p>
+      </div>
+      <div class="escala">
+        <div class="${dict.nivel==='bajo'?'on':''}">Bajo riesgo de crédito</div>
+        <div class="${dict.nivel==='medio'?'on':''}">Riesgo moderado</div>
+        <div class="${dict.nivel==='alto'?'on':''}">Alto riesgo de crédito</div>
+      </div>
+      <div class="cuerpo">${dictTexto}</div>
+      <div class="cifras">
+        <div><div class="k">Pérdida regulatoria estimada</div><div class="v">${fmtMXN(perdidaTotal)}</div></div>
+        <div><div class="k">Equivale a</div><div class="v">${pctIngresos===null?'—':fmtPct(pctIngresos,2)} de ingresos</div></div>
+        <div><div class="k">Riesgos en nivel alto</div><div class="v">${dict.altos} de 5</div></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2><span class="n">1</span> Clasificación de los cinco riesgos</h2>
+      <div class="body" style="padding:0">
+        <table>
+          <thead><tr><th>Riesgo y hallazgos</th><th style="width:120px">Nivel</th><th class="num" style="width:180px">Pérdida estimada</th></tr></thead>
+          <tbody>${perdidas.map(filaRiesgo).join('')}
+            <tr class="total"><td>Total</td><td></td><td class="num">${fmtMXN(perdidaTotal)}</td></tr>
+          </tbody>
+        </table>
+        <div class="body" style="padding-top:14px">
+          <p class="nota" style="border:0;margin:0;padding:0">La clasificación mide la calidad y existencia de la información divulgada, no el cumplimiento real, que no puede verificarse con documentos públicos. Puedes ajustar cualquier nivel con el selector; las cifras se recalculan al instante.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2><span class="n">2</span> Referencias de sanción aplicadas</h2>
+      <div class="body" style="padding:0">
+        <table>
+          <thead><tr><th>Riesgo</th><th>Tope legal</th><th class="num">Base</th><th class="num">Factor aplicado</th></tr></thead>
+          <tbody>${perdidas.map(p=>`<tr>
+            <td>${esc(p.nombre)}</td>
+            <td class="fuente">${esc(p.tope)}</td>
+            <td class="num">${p.id==='licencias'?fmtMXN(p.base)+'<div class="just">ingresos</div>':fmtMXN(p.base)}</td>
+            <td class="num">${esc(p.detalle)}</td></tr>`).join('')}</tbody>
+        </table>
+        <div class="body">
+          <p class="nota" style="border:0;margin:0;padding:0">Salario mínimo general diario de ${fmtMXN(params.sm)} y UMA diaria de ${fmtMXN(params.uma)}. Escenario ${params.escenario}: bajo ${fmtPct(FACTORES[params.escenario].bajo*100,1)}, medio ${fmtPct(FACTORES[params.escenario].medio*100,1)}, alto ${fmtPct(FACTORES[params.escenario].alto*100,1)} del tope.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2><span class="n">3</span> Estados financieros antes y después</h2>
+      <div class="body" style="padding:0">
+        <table>
+          <thead><tr><th>Estado de resultados (${um})</th><th class="num">Antes</th><th class="num">Ajustado</th><th class="num">Variación</th></tr></thead>
+          <tbody>
+            ${filaER('Ingresos','ingresos')}
+            ${filaER('Costo de ventas','costoVentas')}
+            ${filaER('Utilidad bruta','utilidadBruta')}
+            ${filaER('Gastos de operación','gastosOp')}
+            ${filaER('Utilidad de operación','utilidadOp')}
+            ${filaER('EBITDA','ebitda')}
+            ${filaER('Gastos financieros','gastosFin')}
+            ${filaER('Utilidad antes de impuestos','uai')}
+            ${filaER('Utilidad neta','utilidadNeta')}
+          </tbody>
+        </table>
+        <table style="margin-top:10px">
+          <thead><tr><th>Balance general (${um})</th><th class="num">Antes</th><th class="num">Ajustado</th><th class="num">Variación</th></tr></thead>
+          <tbody>
+            ${filaBG('Efectivo y equivalentes','efectivo')}
+            ${filaBG('Activo circulante','activoCirc')}
+            ${filaBG('Activo total','activoTotal')}
+            ${filaBG('Pasivo circulante','pasivoCirc')}
+            ${filaBG('Pasivo total','pasivoTotal')}
+            ${filaBG('Capital contable','capital')}
+            ${filaBG('Flujo de efectivo de operación','feo')}
+          </tbody>
+        </table>
+        <div class="body">
+          <p class="nota" style="border:0;margin:0;padding:0">La pérdida se resta de los ingresos y arrastra todos los renglones que dependen de ellos. En el balance, el efecto neto de impuestos (${fmtMXN(fin.impactoNeto*u)}) consume el efectivo disponible y el remanente se reconoce como provisión en el pasivo circulante; el capital contable absorbe el impacto completo, de modo que el balance sigue cuadrando.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2><span class="n">4</span> Ratios con los estados financieros ajustados</h2>
+      <div class="body" style="padding:0">
+        <table>
+          <thead><tr><th>Ratio</th><th class="num">Antes</th><th class="num">Ajustado</th><th style="width:110px">Lectura</th></tr></thead>
+          <tbody>
+            ${grupoRatios('Solidez')}
+            ${grupoRatios('Capacidad de pago')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    ${bloqueCalculo(R)}
+    ${bloqueRecomendaciones(R)}
+
+    <div class="acciones no-print">
+      <button id="btn-informe">Descargar informe</button>
+      <button id="btn-imprimir">Imprimir o guardar como PDF</button>
+      <button id="btn-txt">Descargar resumen en texto</button>
+    </div>
+    <p class="nota">Herramienta de análisis académico. Las cifras de sanción son referencias máximas de ley aplicadas con supuestos de severidad; no constituyen una estimación legal ni una recomendación de crédito.</p>
+  `;
+
+  document.querySelectorAll('[data-nivel]').forEach(sel=>{
+    sel.addEventListener('change', ev=>{
+      const id = ev.target.getAttribute('data-nivel');
+      state.riesgos[id].nivel = ev.target.value;
+      state.riesgos[id].fuente = 'manual';
+      state.riesgos[id].justificacion = state.riesgos[id].justificacion.replace(/^Nivel ajustado manualmente\. /,'');
+      state.riesgos[id].justificacion = 'Nivel ajustado manualmente. ' + state.riesgos[id].justificacion;
+      recalcular();
+    });
+  });
+  $('#btn-imprimir').addEventListener('click',()=>window.print());
+  $('#btn-informe').addEventListener('click',()=>descargar(informeHTML(), `dictamen-${slug(empresa)}.html`, 'text/html'));
+  $('#btn-txt').addEventListener('click',()=>descargar(informeTXT(), `dictamen-${slug(empresa)}.txt`, 'text/plain'));
+}
+
+/* ---------- Bloque 5: de los ratios al veredicto ---------- */
+const LECTURA = {bajo:'Sano', medio:'Ajustado', alto:'Crítico'};
+
+function bloqueCalculo(R){
+  const {dict, ratiosEval} = R;
+  const w = dict.pesoReg;
+  const conDatos = ratiosEval.filter(r=>r.nivel);
+  const sumaReg = RIESGOS.reduce((a,r)=>a+PUNTOS[state.riesgos[r.id].nivel],0);
+  const sumaFin = conDatos.reduce((a,r)=>a+PUNTOS[r.nivel],0);
+
+  const cortes = [
+    {min:1.00, max:1.70, etq:'Bajo riesgo<br>1.00 – 1.70', n:'bajo'},
+    {min:1.70, max:2.35, etq:'Moderado<br>1.70 – 2.35', n:'medio'},
+    {min:2.35, max:3.00, etq:'Alto riesgo<br>2.35 – 3.00', n:'alto'}
+  ];
+  const pos = Math.min(100, Math.max(0, (dict.total-1)/2*100));
+
+
+  return `
+    <div class="block">
+      <h2><span class="n">5</span> De los ratios al veredicto</h2>
+      <div class="body" style="padding:0">
+        <table>
+          <thead><tr><th>Exposición regulatoria</th><th style="width:110px">Nivel</th><th class="num" style="width:80px">Puntos</th></tr></thead>
+          <tbody>
+            ${RIESGOS.map(r=>{const n=state.riesgos[r.id].nivel;return `<tr>
+              <td>${esc(r.nombre)}</td>
+              <td><span class="pill ${n}">${cap(n)}</span></td>
+              <td class="num">${PUNTOS[n]}</td></tr>`}).join('')}
+            <tr class="total"><td>Promedio de los cinco riesgos</td><td></td><td class="num">${sumaReg} ÷ 5 = ${fmtNum(dict.scoreReg,2)}</td></tr>
+          </tbody>
+        </table>
+
+        <table style="margin-top:10px">
+          <thead><tr><th>Indicadores financieros ajustados</th><th class="num" style="width:80px">Valor</th><th style="width:110px">Lectura</th><th class="num" style="width:80px">Puntos</th></tr></thead>
+          <tbody>
+            ${ratiosEval.map(r=>`<tr>
+              <td>${esc(r.nombre)}<div class="just">${r.ref}</div></td>
+              <td class="num">${r.valor===null?'—':fmtNum(r.valor,2)}</td>
+              <td>${r.nivel?`<span class="pill ${r.nivel}">${LECTURA[r.nivel]}</span>`:'<span class="fuente">Sin datos</span>'}</td>
+              <td class="num">${r.nivel?PUNTOS[r.nivel]:'—'}</td></tr>`).join('')}
+            <tr class="total"><td>Promedio de los ratios con datos</td><td></td><td></td>
+              <td class="num">${conDatos.length?`${sumaFin} ÷ ${conDatos.length} = ${fmtNum(dict.scoreFin,2)}`:'—'}</td></tr>
+          </tbody>
+        </table>
+
+        <div class="body">
+          <div class="formula">
+            ${w===0
+              ? `Puntaje = 100% financiero = promedio de los ratios ajustados = <strong>${fmtNum(dict.total,2)}</strong>`
+              : `Puntaje = ${fmtPct(w*100,0)} regulatorio + ${fmtPct((1-w)*100,0)} financiero<br>
+                 = ${fmtNum(w,2)} × ${fmtNum(dict.scoreReg,2)} + ${fmtNum(1-w,2)} × ${dict.scoreFin!==null?fmtNum(dict.scoreFin,2):'sin datos'}
+                 = <strong>${fmtNum(dict.total,2)}</strong>`}
+          </div>
+
+          <div class="medidor">
+            ${cortes.map(c=>`<span class="${dict.nivel===c.n?'on':''}" style="flex:0 0 ${(c.max-c.min)/2*100}%">${c.etq}</span>`).join('')}
+            <div class="marcador" style="left:${pos}%"><em>${fmtNum(dict.total,2)}</em></div>
+          </div>
+
+          ${dict.banderas.length?`
+            <p class="hint" style="margin:16px 0 6px">Señales de alerta para el analista. No modifican el puntaje:</p>
+            <ul style="margin:0;padding-left:18px;font-size:13.5px">${dict.banderas.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`:''}
+
+          <p class="hint" style="margin:20px 0 8px">Sensibilidad al peso regulatorio, con los mismos datos de este caso:</p>
+          <table style="border:1px solid var(--line-soft)">
+            <thead><tr><th>Peso regulatorio</th><th class="num">Puntaje</th><th>Veredicto</th></tr></thead>
+            <tbody>${dict.sensibilidad.map(s=>`<tr${Math.abs(s.w-w)<0.001?' style="background:var(--accent-soft)"':''}>
+              <td>${s.w===0?'0% — solo financiero':fmtPct(s.w*100,0)}${Math.abs(s.w-w)<0.001?' · en uso':''}</td>
+              <td class="num">${fmtNum(s.total,2)}</td>
+              <td><span class="pill ${s.nivel}">${s.etiqueta}</span></td></tr>`).join('')}</tbody>
+          </table>
+
+          <p class="nota">Cada nivel vale 1 punto si es bajo o sano, 2 si es medio o ajustado y 3 si es alto o crítico. La pérdida regulatoria ya está incorporada en los ratios ajustados, así que el peso regulatorio agrega lo que la multa no captura: probabilidad de ocurrencia, riesgo de clausura o revocación y la opacidad como señal de gobernanza. Con peso 0% el puntaje es únicamente el promedio de los ratios ajustados, y la exposición regulatoria entra al modelo una sola vez: a través de la pérdida estimada que ya golpeó esos ratios.</p>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ---------- Bloque 6: qué hacer con el resultado ---------- */
+function bloqueRecomendaciones(R){
+  const {dict, ratiosEval, perdidaTotal} = R;
+  const altos = RIESGOS.filter(r=>state.riesgos[r.id].nivel==='alto');
+  const medios = RIESGOS.filter(r=>state.riesgos[r.id].nivel==='medio');
+  const debiles = ratiosEval.filter(r=>r.nivel==='alto').map(r=>r.nombre.toLowerCase());
+  const ajustados = ratiosEval.filter(r=>r.nivel==='medio').map(r=>r.nombre.toLowerCase());
+  const faltantes = [...altos,...medios].map(r=>state.riesgos[r.id].faltante).filter(Boolean).slice(0,3);
+  const lista = arr => arr.join(', ');
+
+  let titulo, resumen, items;
+
+  if(dict.nivel==='bajo'){
+    titulo = 'Seguimiento normal';
+    resumen = 'La empresa puede operar dentro del proceso ordinario de crédito, sin condiciones especiales por riesgo regulatorio.';
+    items = [
+      'Revisar el expediente una vez al año, cuando se publiquen el nuevo informe anual y el de sustentabilidad.',
+      'Verificar la vigencia de licencias y permisos en cada renovación o disposición de la línea.',
+      `Dejar registrada la pérdida regulatoria estimada de ${fmtMXN(perdidaTotal)} como referencia de comparación para el siguiente ejercicio.`,
+      ajustados.length ? `Vigilar sin condicionar: ${lista(ajustados)} quedaron en zona ajustada tras el impacto.` : 'Ningún indicador quedó en zona ajustada tras aplicar la pérdida estimada.'
+    ];
+  } else if(dict.nivel==='medio'){
+    titulo = 'Solicitar información y condiciones adicionales';
+    resumen = 'La exposición es material o la divulgación es parcial. Antes de resolver, conviene cerrar los vacíos de información y proteger la línea con condiciones.';
+    items = [
+      altos.length ? `Requerir a la empresa la información que hoy falta en: ${lista(altos.map(r=>r.nombre))}.`
+                   : `Requerir soporte cuantitativo en los rubros divulgados solo de forma cualitativa: ${lista(medios.map(r=>r.nombre)) || 'ninguno'}.`,
+      faltantes.length ? `Documentación concreta por pedir: ${faltantes.join(' ')}` : 'Pedir evidencia documental que respalde las afirmaciones cualitativas del informe de sustentabilidad.',
+      (debiles.length||ajustados.length) ? `Incorporar covenants financieros sobre los indicadores presionados por el ajuste: ${lista([...debiles,...ajustados].slice(0,4))}.`
+                   : 'Incorporar covenants financieros estándar sobre apalancamiento y cobertura de intereses.',
+      'Pasar el monitoreo de anual a semestral y obligar a la entrega del reporte de sustentabilidad dentro de los 30 días de su publicación.',
+      'Evaluar ajuste de precio, reducción de plazo o garantías adicionales que absorban la pérdida estimada.'
+    ];
+  } else {
+    titulo = 'Debida diligencia reforzada';
+    resumen = 'No conviene resolver con la información disponible. El expediente requiere verificación externa antes de cualquier autorización o renovación.';
+    items = [
+      `Contratar una debida diligencia ambiental y legal independiente enfocada en: ${altos.length?lista(altos.map(r=>r.nombre)):'los rubros con divulgación deficiente'}.`,
+      'Verificar directamente ante la autoridad los títulos de concesión, resolutivos de impacto ambiental y vigencia de licencias, en lugar de confiar en lo divulgado.',
+      debiles.length ? `Explicar y sustentar el deterioro en: ${lista(debiles)}, que quedan en zona crítica tras el ajuste.`
+                     : 'Sustentar la capacidad de pago con proyecciones que incorporen la pérdida regulatoria estimada.',
+      `Escalar a comité de riesgos: la pérdida estimada de ${fmtMXN(perdidaTotal)} y el deterioro de los indicadores exceden lo resoluble en el proceso ordinario.`,
+      'Condicionar cualquier desembolso a un plan de remediación con hitos verificables, garantías reales y derecho de aceleración si no se cumplen.'
+    ];
+  }
+
+  return `
+    <div class="block">
+      <h2><span class="n">6</span> Recomendación operativa</h2>
+      <div class="body">
+        <div class="reco ${dict.nivel}">
+          <h3>${esc(titulo)}</h3>
+          <p>${esc(resumen)}</p>
+          <ul>${items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>`;
+}
+
+function redactarDictamen(R){
+  const {dict, perdidaTotal, ingresosPesos, ratiosEval, fin} = R;
+  const pct = ingresosPesos ? perdidaTotal/ingresosPesos*100 : null;
+  const altos = RIESGOS.filter(r=>state.riesgos[r.id].nivel==='alto').map(r=>r.nombre);
+  const bajos = RIESGOS.filter(r=>state.riesgos[r.id].nivel==='bajo').map(r=>r.nombre);
+  const criticos = ratiosEval.filter(r=>r.nivel==='alto').map(r=>r.nombre.toLowerCase());
+  const deteriorados = ratiosEval.filter(r=>r.nivelAntes&&r.nivel&&PUNTOS[r.nivel]>PUNTOS[r.nivelAntes]).map(r=>r.nombre.toLowerCase());
+
+  const p = [];
+  const razon = dict.nivel==='bajo'
+    ? 'La divulgación regulatoria es suficiente en la mayoría de los rubros y los indicadores financieros resisten la pérdida estimada sin comprometer el servicio de la deuda.'
+    : dict.nivel==='medio'
+      ? 'La exposición regulatoria es material o la información es parcial, y los indicadores ajustados dejan un margen estrecho frente a las obligaciones financieras.'
+      : 'La falta de información verificable en varios rubros, el tamaño de la pérdida estimada o el deterioro de los indicadores de pago comprometen la capacidad de servicio de la deuda.';
+  p.push(razon);
+
+  p.push(`La pérdida regulatoria estimada asciende a ${fmtMXN(perdidaTotal)}${pct!==null?`, equivalente a ${fmtPct(pct,2)} de los ingresos del ejercicio`:''}. ${altos.length?`Se clasificaron en nivel alto: ${altos.join(', ')}.`:'Ningún riesgo quedó en nivel alto.'} ${bajos.length?`Con información concreta y cuantitativa: ${bajos.join(', ')}.`:''}`);
+
+  if(criticos.length) p.push(`Tras el ajuste, los indicadores en zona crítica son: ${criticos.join(', ')}.`);
+  else if(deteriorados.length) p.push(`El ajuste deteriora sin llegar a zona crítica: ${deteriorados.join(', ')}.`);
+  else p.push('Ningún indicador ajustado cae en zona crítica.');
+
+  if(dict.banderas.length) p.push('Señales de alerta: '+dict.banderas.join(' '));
+
+  p.push(`Puntaje compuesto de ${fmtNum(dict.total,2)} sobre una escala de 1 a 3, con 45% de peso en la exposición regulatoria (${fmtNum(dict.scoreReg,2)}) y 55% en los indicadores financieros ajustados (${dict.scoreFin!==null?fmtNum(dict.scoreFin,2):'sin datos suficientes'}).`);
+
+  return p.map(x=>`<p>${esc(x)}</p>`).join('');
+}
+
+/* =======================================================================
+   8. DESCARGA DEL INFORME
+   ======================================================================= */
+const slug = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,50)||'empresa';
+
+function descargar(contenido, nombre, tipo){
+  const blob = new Blob([contenido],{type:tipo+';charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=nombre; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url); a.remove();},1000);
+}
+
+function informeHTML(){
+  const R = state.resultado;
+  const cuerpo = $('#resultados').innerHTML
+    .replace(/<div class="acciones no-print">[\s\S]*?<\/div>/,'')
+    .replace(/<select[\s\S]*?<\/select>/g,'');
+  const estilos = document.querySelector('style').textContent;
+  return `<!DOCTYPE html><html lang="es-MX"><head><meta charset="utf-8"><title>Dictamen · ${esc(R.empresa)}</title><style>${estilos}
+  .pill{display:inline-flex!important}.sel-riesgo{display:none}</style></head>
+  <body><div class="wrap" style="padding-top:32px">
+  <h1 style="font-family:var(--serif);font-weight:400">Riesgo regulatorio ESG y capacidad de pago</h1>
+  <p style="color:var(--muted)">${esc(R.empresa)} · generado el ${new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'})}</p>
+  ${cuerpo}</div></body></html>`;
+}
+
+function informeTXT(){
+  const R = state.resultado; const u=R.params.unidad;
+  const L = [];
+  L.push('DICTAMEN DE RIESGO REGULATORIO ESG Y CAPACIDAD DE PAGO');
+  L.push('Empresa: '+R.empresa);
+  L.push('Fecha: '+new Date().toLocaleDateString('es-MX'));
+  L.push('');
+  L.push('CONCLUSIÓN: '+R.dict.etiqueta.toUpperCase());
+  L.push('Puntaje compuesto: '+fmtNum(R.dict.total,2)+' / 3.00');
+  L.push('');
+  L.push('1. CLASIFICACIÓN DE RIESGOS');
+  R.perdidas.forEach(p=>{
+    const r = state.riesgos[p.id];
+    L.push(`  · ${p.nombre}: ${cap(p.nivel)} — pérdida estimada ${fmtMXN(p.perdida)} (${p.detalle})`);
+    L.push(`    ${r.justificacion}`);
+  });
+  L.push('  TOTAL: '+fmtMXN(R.perdidaTotal));
+  L.push('');
+  L.push(`2. ESTADOS FINANCIEROS (${u===1?'pesos':u===1000?'miles':'millones'} de pesos)`);
+  [['Ingresos','ingresos'],['Utilidad bruta','utilidadBruta'],['Utilidad de operación','utilidadOp'],['EBITDA','ebitda'],['Utilidad antes de impuestos','uai'],['Utilidad neta','utilidadNeta'],['Efectivo','efectivo'],['Activo total','activoTotal'],['Pasivo total','pasivoTotal'],['Capital contable','capital']].forEach(([l,k])=>{
+    L.push(`  ${l}: antes ${fmtNum(R.fin.antes[k],1)} → ajustado ${fmtNum(R.fin.despues[k],1)}`);
+  });
+  L.push('');
+  L.push('3. RATIOS AJUSTADOS');
+  R.ratiosEval.forEach(r=>{
+    L.push(`  ${r.nombre}: ${r.valor===null?'sin datos':fmtNum(r.valor,2)} (antes ${r.antes===null?'—':fmtNum(r.antes,2)})${r.nivel?' — '+cap(r.nivel):''}`);
+  });
+  L.push('');
+  L.push('4. CÓMO SE LLEGA AL VEREDICTO');
+  L.push('  Escala de puntos: bajo/sano = 1, medio/ajustado = 2, alto/crítico = 3.');
+  RIESGOS.forEach(r=>L.push(`  · ${r.nombre}: ${cap(state.riesgos[r.id].nivel)} = ${PUNTOS[state.riesgos[r.id].nivel]} pts`));
+  L.push(`  Promedio regulatorio: ${fmtNum(R.dict.scoreReg,2)}`);
+  R.ratiosEval.filter(r=>r.nivel).forEach(r=>L.push(`  · ${r.nombre}: ${fmtNum(r.valor,2)} = ${LECTURA[r.nivel]} = ${PUNTOS[r.nivel]} pts`));
+  L.push(`  Promedio financiero: ${R.dict.scoreFin!==null?fmtNum(R.dict.scoreFin,2):'sin datos'}`);
+  L.push(R.dict.pesoReg===0
+    ? `  Puntaje = 100% financiero = ${fmtNum(R.dict.total,2)}`
+    : `  Puntaje = ${fmtNum(R.dict.pesoReg,2)} × ${fmtNum(R.dict.scoreReg,2)} + ${fmtNum(1-R.dict.pesoReg,2)} × ${R.dict.scoreFin!==null?fmtNum(R.dict.scoreFin,2):'—'} = ${fmtNum(R.dict.total,2)}`);
+  L.push('  Sensibilidad al peso regulatorio:');
+  R.dict.sensibilidad.forEach(x=>L.push(`    ${x.w===0?'0% (solo financiero)':fmtNum(x.w*100,0)+'%'}: ${fmtNum(x.total,2)} → ${x.etiqueta}`));
+  if(R.dict.banderas.length){ L.push('  Señales de alerta (no modifican el puntaje):');
+    R.dict.banderas.forEach(b=>L.push('    - '+b)); }
+  L.push('  Cortes: < 1.70 bajo · 1.70 a 2.35 moderado · > 2.35 alto');
+  L.push('');
+  L.push('5. FUNDAMENTO');
+  L.push($('.dictamen .cuerpo').innerText.split('\n').map(x=>'  '+x).join('\n'));
+  L.push('');
+  L.push('6. RECOMENDACIÓN OPERATIVA');
+  L.push($('.reco').innerText.split('\n').map(x=>'  '+x).join('\n'));
+  L.push('');
+  L.push('Nota: la evaluación mide la calidad y existencia de la información pública divulgada, no el cumplimiento real. Herramienta de uso académico.');
+  return L.join('\n');
+}
+
+/* =======================================================================
+   9. EXTRACCIÓN DE EEFF Y UTILIDADES DE CAPTURA
+   ======================================================================= */
+$('#btn-extraer').addEventListener('click', async ()=>{
+  const texto = state.docs.eeff || state.docs.anual;
+  if(!texto){ setStatus('#extraer-status','Carga primero el archivo de estados financieros o el informe anual.','err'); return; }
+  setStatus('#extraer-status','Leyendo cifras del documento…');
+  try{
+    const frag = extraerRelevante(texto, ['ingresos','ventas netas','costo de ventas','utilidad','activo','pasivo','capital contable','efectivo','inventarios','depreciación','intereses','flujo'], 20000);
+    const out = await llamarClaude(SYSTEM_EEFF, `Extrae las cifras del ejercicio más reciente de estos estados financieros:\n"""\n${frag}\n"""`);
+    const j = parseJSON(out);
+    let n=0;
+    CAMPOS.forEach(g=>g.items.forEach(i=>{
+      const v = j[i.id];
+      if(typeof v==='number' && isFinite(v)){ $('#'+i.id).value = v; n++; }
+    }));
+    if(j.unidad==='pesos') $('#unidad').value='1';
+    else if(j.unidad==='miles') $('#unidad').value='1000';
+    else if(j.unidad==='millones') $('#unidad').value='1000000';
+    setStatus('#extraer-status', n?`Se llenaron ${n} campos. Revísalos y corrige lo que haga falta antes de analizar.`:'No se identificaron cifras. Captúralas manualmente.', n?'ok':'err');
+  }catch(err){
+    setStatus('#extraer-status','Error: '+err.message+'. Si el problema persiste, captura las cifras a mano.','err');
+  }
+});
+
+$('#btn-ejemplo').addEventListener('click', ()=>{
+  const ej = {ingresos:52400, costoVentas:36800, gastosOp:9100, depreciacion:3400, gastosFin:2150, otrosRes:-180,
+    activoCirc:21400, efectivo:6200, inventarios:7300, activoTotal:98600, pasivoCirc:16800, pasivoTotal:58200,
+    deudaTotal:41500, capital:40400, feo:8900};
+  Object.entries(ej).forEach(([k,v])=>{ const el=$('#'+k); if(el) el.value=v; });
+  $('#unidad').value='1000000';
+  if(!$('#empresa').value) $('#empresa').value='Emisora de ejemplo, S.A.B. de C.V.';
+  setStatus('#extraer-status','Cifras de ejemplo cargadas en millones de pesos.','ok');
+});
+
+$('#btn-limpiar').addEventListener('click', ()=>{
+  CAMPOS.forEach(g=>g.items.forEach(i=>$('#'+i.id).value=''));
+  setStatus('#extraer-status','Campos vacíos.');
+});
+
+['sm','uma','escenario','tope-emisiones','lic-bajo','lic-medio','lic-alto','tasa','unidad','peso-reg']
+  .forEach(id=>$('#'+id).addEventListener('change', ()=>{ if(state.riesgos) recalcular(); }));
+CAMPOS.forEach(g=>g.items.forEach(i=>$('#'+i.id).addEventListener('change', ()=>{ if(state.riesgos) recalcular(); })));
+</script>
+</body>
+</html>
